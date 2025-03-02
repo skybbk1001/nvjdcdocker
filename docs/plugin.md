@@ -487,7 +487,7 @@ Vitepress并不需要这个，也可以通过 [markdown-it](https://markdown-it.
 :::
 
 
-:::: details 实测下来不建议折腾，不如直接使用Emoji表情
+
 
 我们需要用到另一款插件：[markdown-it-task-checkbox](https://github.com/linsir/markdown-it-task-checkbox)
 
@@ -511,31 +511,16 @@ bun add -D markdown-it-task-checkbox
 :::
 
 
-如果根据文档配置的话是不行的，源码也比较久了，使用的是 [commonjs 同步函数](https://zh.wikipedia.org/wiki/CommonJS) ，而Vitepress使用的是 [ES module 异步函数](https://zh.wikipedia.org/wiki/ECMAScript)
+以下配置方式由 [Aurorxa](https://github.com/Aurorxa) 提供
 
-::: details 关于 CJS 和 ESM
-commonjs：简称CJS，`module.exports` `exports` 导出，`require` 导入
-
-ES module：简称ESM，`export` 导出，`import` 导入
-
-这个我们在最开始 [Vitepress前言](./preface.md#官方) 的时候也提到过
-:::
-
-```ts{2,5-16}
+```ts{2,5-9}
 // .vitepress/config.mts
 import taskLists from 'markdown-it-task-checkbox'
 
 export default defineConfig({
   markdown: {
     config: (md) => {
-      md.use(taskLists, {
-        disabled: true,
-        divWrap: false,
-        divClass: 'checkbox',
-        idPrefix: 'cbx_',
-        ulClass: 'task-list',
-        liClass: 'task-list-item',
-      })
+      md.use(markdownItTaskCheckbox) //todo
     }
   },
 })
@@ -555,44 +540,103 @@ export default defineConfig({
 粘贴 `declare module 'markdown-it-task-checkbox';` 代码保存
 :::
 
-::: tip 说明
-`disabled` 改成  `false` ，可以激活勾选框
-:::
-
-版本过低，跑不起来，我们直接安装 `@types/node`
 
 
+输入：
 
-::: code-group
-```sh [pnpm]
-pnpm add -d @types/node
+```md
+- [ ] 吃饭
+- [ ] 睡觉
+- [x] 打豆豆
 ```
 
-```sh [yarn]
-yarn add -D @types/node
-```
-
-```sh [npm]
-npm install @types/node --save
-```
-
-```sh [bun]
-bun add -D @types/node
-```
-:::
-
-
-自己测试效果即可
+输出：
 
 - [ ] 吃饭
 - [ ] 睡觉
 - [x] 打豆豆
 
-::::
+觉得不好看，可以使用 [Aurorxa](https://github.com/Aurorxa) 提供的样式
 
+```css
+/* checkbox 颜色设置 */
+li.task-list-item {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  /* margin: 2px 0 0; */
+  list-style: inherit;
+}
 
+/* Target the last child element to push it to the next line */
+li.task-list-item ul:last-child {
+  flex-basis: 100%;
+  margin-right: 0;
+}
 
-最后，我还是推荐直接使用 [emoji表情](https://www.emojiall.com/zh-hant/) ，简简单单
+li.task-list-item input[type="checkbox"] {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  line-height: 12px;
+  margin-right: 8px;
+  border: 1px solid #949494;
+
+  -webkit-appearance: none;
+  appearance: none;
+  -moz-appearance: none;
+}
+
+li.task-list-item input[type="checkbox"]:after {
+  position: absolute;
+  top: 0;
+  color: #000;
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  visibility: visible;
+  padding-left: 0;
+  text-align: center;
+  content: " ";
+  border-radius: 3px;
+}
+
+li.task-list-item input[type="checkbox"]:checked {
+  background-color: var(--vp-c-brand);
+}
+
+li.task-list-item input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: #fff;
+  line-height: 13px;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.timeline-dot {
+  color: #7f8c8d;
+}
+
+.task-list {
+  margin: 0 !important;
+}
+
+li.task-list-item p {
+  display: flex;
+  margin: 0;
+  align-items: center;
+}
+```
+
+然后在 `index.css` 中引入生效
+
+```css
+/* .vitepress/theme/style/index.css */
+@import './task-list.css';
+```
+
+当然你也可以直接直接使用 [emoji表情](https://www.emojiall.com/zh-hant/) ，懒人方式
 
 * ✅ 吃饭
 
@@ -866,6 +910,207 @@ if (inBrowser) {
 }
 ```
 
+
+
+## Mermaid 
+
+根据 [VitePress Plugin Mermaid插件官网](https://emersonbottero.github.io/vitepress-plugin-mermaid/) 的教程安装依赖
+
+
+::: code-group
+```sh [pnpm]
+pnpm add -D vitepress-plugin-mermaid
+```
+
+```sh [yarn]
+yarn add -D vitepress-plugin-mermaid
+```
+
+```sh [npm]
+npm i -D vitepress-plugin-mermaid
+```
+
+```sh [bun]
+bun add -D vitepress-plugin-mermaid
+```
+:::
+
+
+在 `config.mts` 中进行配置
+
+```ts{1,3,7}
+import { withMermaid } from 'vitepress-plugin-mermaid'
+
+export default defineConfig({ // [!code --:3]
+
+})
+
+export default withMermaid( // [!code ++:13]
+  defineConfig({
+
+    mermaid: {
+      // refer https://mermaid.js.org/config/setup/modules/mermaidAPI.html#mermaidapi-configuration-defaults for options
+    },
+    // optionally set additional config for plugin itself with MermaidPluginConfig
+    mermaidPlugin: {
+      class: "mermaid my-class", // set additional css classes for parent container 
+    },
+
+  })
+)
+
+```
+
+如果报错了页面打不开，你还需要安装如下几个依赖
+
+::: code-group
+```sh [pnpm]
+pnpm add -D @braintree/sanitize-url cytoscape cytoscape-cose-bilkent dayjs debug
+```
+
+```sh [yarn]
+yarn add -D @braintree/sanitize-url cytoscape cytoscape-cose-bilkent dayjs debug
+```
+
+```sh [npm]
+npm i -D @braintree/sanitize-url cytoscape cytoscape-cose-bilkent dayjs debug
+```
+
+```sh [bun]
+bun add -D @braintree/sanitize-url cytoscape cytoscape-cose-bilkent dayjs debug
+```
+:::
+
+
+:::: details 不想安装这么多依赖？你可以这样配置
+仅安装mermaid
+
+::: code-group
+```sh [pnpm]
+pnpm add -D mermaid
+```
+
+```sh [yarn]
+yarn add -D mermaid
+```
+
+```sh [npm]
+npm i -D mermaid
+```
+
+```sh [bun]
+bun add -D mermaid
+```
+:::
+
+
+```ts{1,7,11-17}
+import { MermaidMarkdown, MermaidPlugin } from 'vitepress-plugin-mermaid';
+
+export default defineConfig({
+
+  markdown: {
+    config(md) {
+      md.use(MermaidMarkdown); 
+    },
+  },
+  vite: {
+    plugins: [MermaidPlugin()],
+    optimizeDeps: {
+      include: ['mermaid'],
+    },
+    ssr: {
+      noExternal: ['mermaid'],
+    },
+  },
+
+});
+
+```
+
+::::
+
+
+
+输入：
+
+````
+```mermaid
+flowchart LR
+  Start --> Stop
+```
+````
+
+输出：
+
+```mermaid
+flowchart LR
+  Start --> Stop
+```
+
+
+输入：
+
+````md
+```mermaid
+graph LR
+    A[Java 数据类型] --> B[原始数据类型]
+    A[Java 数据类型] --> C[引用数据类型]
+    
+    B --> D[整数类型]
+    B --> E[浮点类型]
+    B --> F[字符类型]
+    B --> G[布尔类型]
+    
+    D --> H[int]
+    D --> I[long]
+    D --> J[short]
+    D --> K[byte]
+    
+    E --> L[float]
+    E --> M[double]
+    
+    F --> N[char]
+    
+    G --> O[boolean]
+    
+    C --> P[类]
+    C --> Q[接口]
+    C --> R[数组]
+
+````
+
+输出：
+
+```mermaid
+graph LR
+    A[Java 数据类型] --> B[原始数据类型]
+    A[Java 数据类型] --> C[引用数据类型]
+    
+    B --> D[整数类型]
+    B --> E[浮点类型]
+    B --> F[字符类型]
+    B --> G[布尔类型]
+    
+    D --> H[int]
+    D --> I[long]
+    D --> J[short]
+    D --> K[byte]
+    
+    E --> L[float]
+    E --> M[double]
+    
+    F --> N[char]
+    
+    G --> O[boolean]
+    
+    C --> P[类]
+    C --> Q[接口]
+    C --> R[数组]
+
+```
+
+更多使用方式，请查看 [VitePress Plugin Mermaid官网](https://emersonbottero.github.io/vitepress-plugin-mermaid/guide/more-examples.html)
 
 
 ## 评论

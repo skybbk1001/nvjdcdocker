@@ -28,12 +28,16 @@ import MyLayout from "./components/MyLayout.vue" //视图过渡
 import backtotop from "./components/backtotop.vue" //返回顶部
 import notice from "./components/notice.vue" //公告
 import fluidborder from "./components/fluidborder.vue" //流体边框仅用于演示
+import MouseClick from "./components/MouseClick.vue"
+import MouseFollower from "./components/MouseFollower.vue"
 
 // 不蒜子
 import { inBrowser } from 'vitepress'
 import busuanzi from 'busuanzi.pure.js'
 import bsz from "./components/bsz.vue"
 
+// 彩虹背景动画样式
+let homePageStyle: HTMLStyleElement | undefined
 
 export default {
   extends: DefaultTheme,
@@ -48,6 +52,8 @@ export default {
     app.component('ArticleMetadata' , ArticleMetadata) //字数阅读时间
     app.component('Linkcard' , Linkcard) //链接卡片
     app.component('fluidborder' , fluidborder) //流体边框仅用于演示
+    app.component('MouseClick', MouseClick) //鼠标跟随组件
+    app.component('MouseFollower', MouseFollower) //鼠标跟随组件
 
     // 不蒜子
     if (inBrowser) {
@@ -55,10 +61,19 @@ export default {
       router.onBeforeRouteChange = () => {
         NProgress.start() // 开始进度条
       }
-      router.onAfterRouteChanged = () => {
+      router.onAfterRouteChange = () => {
          busuanzi.fetch()
          NProgress.done() // 停止进度条
        }
+    }
+
+    // 彩虹背景动画样式
+    if (typeof window !== 'undefined') {
+      watch(
+        () => router.route.data.relativePath,
+        () => updateHomePageStyle(location.pathname === '/'),
+        { immediate: true },
+      )
     }
 
   },
@@ -122,4 +137,24 @@ export default {
 
   },
 
+}
+
+
+// 彩虹背景动画样式
+function updateHomePageStyle(value: boolean) {
+  if (value) {
+    if (homePageStyle) return
+
+    homePageStyle = document.createElement('style')
+    homePageStyle.innerHTML = `
+    :root {
+      animation: rainbow 12s linear infinite;
+    }`
+    document.body.appendChild(homePageStyle)
+  } else {
+    if (!homePageStyle) return
+
+    homePageStyle.remove()
+    homePageStyle = undefined
+  }
 }

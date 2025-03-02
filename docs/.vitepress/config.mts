@@ -1,10 +1,9 @@
 import { defineConfig } from 'vitepress'
 
-//命令集：pnpm add -D vitepress vue @mdit-vue/shared @types/node busuanzi.pure.js canvas-confetti less medium-zoom sass vitepress-plugin-comment-with-giscus xgplayer
-
 import { devDependencies } from '../../package.json'
-
+import markdownItTaskCheckbox from 'markdown-it-task-checkbox'
 import { groupIconMdPlugin, groupIconVitePlugin, localIconLoader } from 'vitepress-plugin-group-icons'
+import { MermaidMarkdown, MermaidPlugin } from 'vitepress-plugin-mermaid';
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -47,6 +46,9 @@ export default defineConfig({
     //行号显示
     lineNumbers: true,
 
+    // toc显示一级标题
+    toc: {level: [1,3]},
+
     // 使用 `!!code` 防止转换
     codeTransformers: [
       {
@@ -69,8 +71,9 @@ export default defineConfig({
         return htmlResult
       },
 
-
-        md.use(groupIconMdPlugin) //代码组图标
+      md.use(groupIconMdPlugin) //代码组图标
+      md.use(markdownItTaskCheckbox) //todo
+      md.use(MermaidMarkdown); 
 
     }
 
@@ -85,8 +88,15 @@ export default defineConfig({
           css: localIconLoader(import.meta.url, '../public/svg/css.svg'), //css图标
           js: 'logos:javascript', //js图标
         },
-      })
+      }),
+      [MermaidPlugin()]
     ],
+    optimizeDeps: {
+      include: ['mermaid'],
+    },
+    ssr: {
+      noExternal: ['mermaid'],
+    },
   },
 
   lastUpdated: true, //此配置不会立即生效，需git提交后爬取时间戳，没有安装git本地报错可以先注释
@@ -145,6 +155,8 @@ export default defineConfig({
             items: [
               { text: 'Markdown', link: '/markdown' },
               { text: '团队', link: '/team' },
+              { text: '多语言', link: '/multi-language' },
+              { text: 'DocSearch', link: '/docsearch' },
               { text: '静态部署', link: '/assets' },
               { text: '样式美化', link: '/style' },
               { text: '组件', link: '/components' },
@@ -152,7 +164,6 @@ export default defineConfig({
               { text: '插件', link: '/plugin' },
               { text: '更新及卸载', link: '/update' },
               { text: '搭建导航', link: '/nav/' },
-              { text: '多语言', link: '/multi-language' },
             ],
           },
         ],
@@ -190,6 +201,8 @@ export default defineConfig({
         items: [
           { text: 'Markdown', link: '/markdown' },
           { text: '团队', link: '/team' },
+          { text: '多语言', link: '/multi-language' },
+          { text: 'DocSearch', link: '/docsearch' },
           { text: '静态部署', link: '/assets' },
           { text: '样式美化', link: '/style' },
           { text: '组件', link: '/components' },
@@ -197,7 +210,6 @@ export default defineConfig({
           { text: '插件', link: '/plugin' },
           { text: '更新及卸载', link: '/update' },
           { text: '搭建导航', link: '/nav/' },
-          { text: '多语言', link: '/multi-language/' },
         ],
       },
       {
@@ -214,23 +226,51 @@ export default defineConfig({
 
 
 
-    //本地搜索
+    //Algolia搜索
     search: {
-      provider: 'local',
+      provider: 'algolia',
       options: {
+        appId: 'QVKQI62L15',
+        apiKey: 'bef8783dde57293ce082c531aa7c7e0c',
+        indexName: 'doc',
         locales: {
-          zh: {
+          root: {
+            placeholder: '搜索文档',
             translations: {
               button: {
                 buttonText: '搜索文档',
                 buttonAriaLabel: '搜索文档'
               },
               modal: {
-                noResultsText: '无法找到相关结果',
-                resetButtonTitle: '清除查询条件',
+                searchBox: {
+                  resetButtonTitle: '清除查询条件',
+                  resetButtonAriaLabel: '清除查询条件',
+                  cancelButtonText: '取消',
+                  cancelButtonAriaLabel: '取消'
+                },
+                startScreen: {
+                  recentSearchesTitle: '搜索历史',
+                  noRecentSearchesText: '没有搜索历史',
+                  saveRecentSearchButtonTitle: '保存至搜索历史',
+                  removeRecentSearchButtonTitle: '从搜索历史中移除',
+                  favoriteSearchesTitle: '收藏',
+                  removeFavoriteSearchButtonTitle: '从收藏中移除'
+                },
+                errorScreen: {
+                  titleText: '无法获取结果',
+                  helpText: '你可能需要检查你的网络连接'
+                },
                 footer: {
                   selectText: '选择',
-                  navigateText: '切换'
+                  navigateText: '切换',
+                  closeText: '关闭',
+                  searchByText: '搜索提供者'
+                },
+                noResultsScreen: {
+                  noResultsText: '无法找到相关结果',
+                  suggestedQueryText: '你可以尝试查询',
+                  reportMissingResultsText: '你认为该查询应该有结果？',
+                  reportMissingResultsLinkText: '点击反馈'
                 },
               },
             },
